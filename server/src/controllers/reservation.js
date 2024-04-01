@@ -40,9 +40,32 @@ module.exports = {
             #swagger.summary = "Create Reservation"
         */
 
+    const { roomId, arrival_date, departure_date } = req.body;
+
+    const sameReservation = await Reservation.findOne({
+      roomId: roomId,
+      $or: [
+        {
+          arrival_date: { $lte: departure_date },
+
+          departure_date: { $gte: arrival_date },
+        },
+      ],
+    });
+
+    if (sameReservation) {
+      return res.status(409).send({
+        error: true,
+        message:
+          "Bu tarihlerde odamız rezervasyonludur. Farklı odalardan birini seçebilirsiniz! ",
+      });
+    }
+
     //price değerini roomdan almak istesek:
-    const roomData = await Room.findOne({ _id: req.body.roomId });
-    req.body.price = roomData.price;
+    if (!req.params.price) {
+      const roomData = await Room.findOne({ _id: req.body.roomId });
+      req.body.price = roomData.price;
+    }
 
     const data = await Reservation.create(req.body);
 

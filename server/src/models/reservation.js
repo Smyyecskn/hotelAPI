@@ -24,6 +24,12 @@ const ReservationSchema = new mongoose.Schema(
     departure_date: {
       type: Date,
       required: true,
+      validate: {
+        validator: function (departure_date) {
+          return departure_date > this.arrival_date;
+        },
+        message: (props) => `Çıkış tarihi giriş tarihinden önce olmalıdır.!`,
+      },
     },
     quest_number: {
       type: Date,
@@ -31,12 +37,12 @@ const ReservationSchema = new mongoose.Schema(
     night: {
       type: Number,
       default: function () {
-        let time = this.arrival_date.getTime() - this.departure_date.getTime();
+        let time = this.departure_date - this.arrival_date;
         let days = Math.floor(time / (1000 * 60 * 60 * 24));
         return days;
       },
       transform: function () {
-        let time = this.arrival_date.getTime() - this.departure_date.getTime();
+        let time = this.departure_date - this.arrival_date;
         let days = Math.floor(time / (1000 * 60 * 60 * 24));
         return days;
       },
